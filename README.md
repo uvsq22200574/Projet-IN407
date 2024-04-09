@@ -11,4 +11,4 @@
 
 ## Screenshots  
 
-![Figure1](embed/embed/Figure%201.png)
+![Figure1](embed/Figure%201.png)
