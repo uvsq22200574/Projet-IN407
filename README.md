@@ -11,4 +11,4 @@
 
 ## Screenshots  
 
-![Figure 1](embed/Figure 1.png)
+![Figure 1](embed/"Figure 1.png")
