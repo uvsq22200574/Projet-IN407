@@ -183,7 +183,7 @@ if __name__ == "__main__":
     style.configure("red.Horizontal.TProgressbar", foreground='red', background='red')
 
     client_test = Client()
-    BUFFERS = [Buffer(main_window, (0, i, 10, 10), 100, i) for i in range(10)]
+    BUFFERS = [Buffer(main_window, (0, i, 10, 10), 100, i) for i in range(5)]
 
     # Add any additional configuration or widgets here
 
