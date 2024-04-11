@@ -132,16 +132,32 @@ def test_client():
 # Question 4+
 
 
+class Buffer:
+    """"""
+
+    def __init__(self, master, grid_pos: tuple, size: int):
+        self.master = master
+        self.grid_pos = grid_pos
+        self.buffer = Queue(size)
+        self.progbarvalue = DoubleVar()
+
+        self.ProgressBar = ttk.Progressbar(self.master, orient=VERTICAL, length=160, variable=self.progbarvalue, style="red.Horizontal.TProgressbar")
+        self.ProgressBar.grid(row=grid_pos[0], column=grid_pos[1], padx=grid_pos[2], pady=grid_pos[3])
+        self.ProgressBar.config(maximum=self.buffer.size)
+
+    def update_progress_bar(self):
+        (self.progbarvalue).set(self.buffer.length() - 0.001)
+
+
 def main_loop():
     """What makes the window dynamic. Each loop is referred as a tick."""
 
-    progressbar.config(maximum=queue_test.size)
-    progressbar_value.set(queue_test.length() - 0.01)
-    packet_loss.config(text=f"Loss:{queue_test.ratio * 100:.3f}%")
-    client_test.generate_packets(50, 0.6)
-    client_test.send_packets(queue_test, 2, True)
-    queue_test.remove() if randint(0, 1) else 0
-    queue_test.remove_all() if random_event(.1) else 0
+    for BUFFER in BUFFERS:
+        BUFFER.update_progress_bar()
+        BUFFER.buffer.remove() if randint(0, 1) else 0
+        BUFFER.buffer.remove_all() if random_event(.1) else 0
+        client_test.generate_packets(50, 0.6)
+        client_test.send_packets(BUFFER.buffer, 2, True)
 
     main_window.update()
     main_window.after(func=main_loop, ms=25)
@@ -158,18 +174,12 @@ if __name__ == "__main__":
     style.theme_use('clam')
     style.configure("red.Horizontal.TProgressbar", foreground='red', background='red')
 
-    queue_test = Queue(100)
     client_test = Client()
+    BUFFERS = [Buffer(main_window, (0, i, 10, 10), 100) for i in range(30)]
 
     # Add any additional configuration or widgets here
-    progressbar_value = DoubleVar()
-    progressbar = ttk.Progressbar(orient=VERTICAL, length=160, variable=progressbar_value, style="red.Horizontal.TProgressbar")
-    progressbar.grid(row=0, column=0, padx=10, pady=10)
 
-    packet_loss = Label(main_window, text="")
-    packet_loss.grid(row=0, column=2, padx=10, pady=10)
-
-    clear_queue = Button(main_window, text="Clear", command=lambda: queue_test.remove_all()).grid(row=1, column=2, padx=10, pady=10)
+    #clear_queue = Button(main_window, text="Clear", command=lambda: BUFFER.buffer.remove_all()).grid(row=1, column=2, padx=10, pady=10)
 
     # Run the Tkinter event loop
     main_loop()
