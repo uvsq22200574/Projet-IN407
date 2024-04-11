@@ -1,5 +1,5 @@
 from numpy import random as probability
-from tkinter import Tk, Label, Button, ttk, DoubleVar, VERTICAL
+from tkinter import Tk, Label, Button, LabelFrame, ttk, DoubleVar, VERTICAL
 from random import randint, random
 
 
@@ -135,29 +135,37 @@ def test_client():
 class Buffer:
     """"""
 
-    def __init__(self, master, grid_pos: tuple, size: int):
+    def __init__(self, master, grid_pos: tuple, size: int, index: int, display_size: int = 200):
         self.master = master
         self.grid_pos = grid_pos
+        self.display_size = display_size
+
+        self.Frame = LabelFrame(self.master, text=f"Buffer {index}", background="#FFFF00")
+        self.Frame.grid(row=grid_pos[0], column=grid_pos[1], padx=grid_pos[2], pady=grid_pos[3])
         self.buffer = Queue(size)
         self.progbarvalue = DoubleVar()
 
-        self.ProgressBar = ttk.Progressbar(self.master, orient=VERTICAL, length=160, variable=self.progbarvalue, style="red.Horizontal.TProgressbar")
-        self.ProgressBar.grid(row=grid_pos[0], column=grid_pos[1], padx=grid_pos[2], pady=grid_pos[3])
+        self.ProgressBar = ttk.Progressbar(self.Frame, orient=VERTICAL, length=self.display_size, variable=self.progbarvalue, style="red.Horizontal.TProgressbar")
+        self.ProgressBar.grid(row=0, column=0, padx=grid_pos[2], pady=grid_pos[3])
         self.ProgressBar.config(maximum=self.buffer.size)
 
-    def update_progress_bar(self):
+        self.loss_label = Label(self.Frame, text="Loss: N/A")
+        self.loss_label.grid(row=0, column=2, padx=grid_pos[2], pady=grid_pos[3])
+
+    def update(self):
         (self.progbarvalue).set(self.buffer.length() - 0.001)
+        self.loss_label.configure(text=f"Loss: {self.buffer.ratio * 100:05.2f}%")
 
 
 def main_loop():
     """What makes the window dynamic. Each loop is referred as a tick."""
 
     for BUFFER in BUFFERS:
-        BUFFER.update_progress_bar()
         BUFFER.buffer.remove() if randint(0, 1) else 0
         BUFFER.buffer.remove_all() if random_event(.1) else 0
         client_test.generate_packets(50, 0.6)
-        client_test.send_packets(BUFFER.buffer, 2, True)
+        client_test.send_packets(BUFFER.buffer, 2, False)
+        BUFFER.update()
 
     main_window.update()
     main_window.after(func=main_loop, ms=25)
@@ -175,7 +183,7 @@ if __name__ == "__main__":
     style.configure("red.Horizontal.TProgressbar", foreground='red', background='red')
 
     client_test = Client()
-    BUFFERS = [Buffer(main_window, (0, i, 10, 10), 100) for i in range(30)]
+    BUFFERS = [Buffer(main_window, (0, i, 10, 10), 100, i) for i in range(10)]
 
     # Add any additional configuration or widgets here
 
