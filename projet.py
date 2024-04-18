@@ -177,7 +177,7 @@ class Buffer:
         self.remaining_packets = Label(self.Frame, text="Packets left: N/A")
         self.remaining_packets.grid(row=2, column=2, padx=grid_pos[2], pady=grid_pos[3])
 
-        self.lambda_scale = Scale(self.Frame, from_=0, to=100, orient=HORIZONTAL, variable=self.rate_lambda, resolution=0.1)
+        self.lambda_scale = Scale(self.Frame, from_=0, to=self.buffer.size // 8, orient=HORIZONTAL, variable=self.rate_lambda, resolution=0.1)
         self.lambda_scale.config(length=self.display_size // 2)
         self.lambda_scale.grid(row=3, column=3)
 
@@ -196,7 +196,7 @@ class Buffer:
 
         # Updating widgets
         self.loss_label.configure(text=f"Loss: {self.buffer.ratio * 100:05.2f}%")
-        self.occupation_label.configure(text=f"Occupied: {self.buffer.space_occupied()}/{self.buffer.size}")
+        self.occupation_label.configure(text=f"Occupied: {self.buffer.space_occupied():04d}/{self.buffer.size}")
         self.remaining_packets.configure(text=f"Packets left: {len(self.clients.packets)}")
         self.progbarvalue.set(self.buffer.space_occupied() - 0.001)
 
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     style.theme_use('clam')
     style.configure("red.Horizontal.TProgressbar", foreground='red', background='red')
 
-    BUFFERS = [Buffer(main_window, (0, i, 10, 10), 3000, i, Client()) for i in range(3)]
+    BUFFERS = [Buffer(main_window, (i // 6, i % 6, 5, 5), 3000, i, Client()) for i in range(12)]
 
     # Add any additional configuration or widgets here
 
