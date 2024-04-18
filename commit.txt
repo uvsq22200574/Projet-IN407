@@ -1,0 +1,13 @@
+Done:
+- Revisited the UI
+- Added class operations to Queue and Packets
+- Removed unused content
+- Upgraded the Buffer class to support options (like a Tkinter widget)
+- Made λ a general variable for part2
+To Do:
+- Separate the Client from the Buffer class
+- Rename the Buffer class to something else, as they are just containers for a progressbar and labels
+- Make Clients a custom widget that can be associated to the custom widget "Buffer"
+- Add radio buttons to choose the strategy of emptying
+- Add emptying strategy
+- More

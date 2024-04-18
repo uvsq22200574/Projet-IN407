@@ -3,11 +3,6 @@ from tkinter import Tk, Label, Button, Scale, LabelFrame, ttk, IntVar, DoubleVar
 from random import randint, random
 
 
-def random_event(probability: float):
-    "The probability is a number indicating a percentage [probability%]"
-    return (random() < (probability / 100))
-
-
 class Queue:
     """Follow the principle of FIFO, First In First Out. Can be used as a Buffer."""
 
@@ -20,19 +15,14 @@ class Queue:
     def __repr__(self):
         return (f"Queue({self.content})")
 
-    def add(self, element: any, **kwargs):
-        """
-        Will add an element to the first position.
-        \nOptional Arguments:
-        \n\tlog: bool -> Print in the terminal when there is a packet loss.
-        """
-        if (self.space_remaining() > element.size):
-            self.content = [element] + self.content
+    def __add__(self, packet):
+        """Will add an element to the first position."""
+        if (self.space_remaining() > packet.size):
+            self.content.append(packet)
             self.__count["success"] += 1
         else:
             self.__count["loss"] += 1
-            if kwargs.get("log") is True:
-                print(f"\033[91mError:The Queue is full and {element} is lost.\033[0m")
+        return (self)
 
     def remove(self):
         """Will remove the last element of the Queue and store that value.\n\n Can also only return the last removed object."""
@@ -66,8 +56,10 @@ class Queue:
         """Return the amount of space available"""
         return (self.size - sum([packet.size for packet in self.content]))
 
-    def space_occupied(self) -> int:
+    def space_occupied(self, **kwargs) -> int:
         """Return the amount of space available"""
+        if kwargs.get("percentage") is True:
+            return (sum([packet.size for packet in self.content]) / self.size)
         return sum([packet.size for packet in self.content])
 
     def is_empty(self):
@@ -88,25 +80,25 @@ class Queue:
 class Client:
     """A Source of packets, that can send information to a Buffer."""
 
-    def __init__(self):
+    def __init__(self, master=None):
         self.id = id(self)
-        self.packets = None
+        self.packets = []
 
     def __repr__(self) -> str:
         return (f"Client(ID={self.id})")
 
     def generate_packets(self, size: int = 100, rate_lambda: float = 0):
-        if not self.packets:
+        """Generate a numpy array containing values based on the λ chosen, the amount of values is given by the size
+        \nThe larger the size the better the accuracy, but slower is the reaction time when λ changes.
+        """
+        if len(self.packets) <= 0:
             self.packets = [Packet(self.id, value) for value in probability.poisson(rate_lambda, size)]
 
-    def send_packets(self, queue: Queue, amount: int = 1, log: bool = False):
+    def send_packets(self, queue: Queue, amount: int = 1):
         """The amount determines the number of cycles before creating new packets"""
-        if self.packets:
-            for packet in self.packets[:amount]:
-                queue.add(packet, log=False)
-                self.packets.pop(0)
-        else:
-            print(f"\033[91mError: No packets to send. Generate packets first using {self.__class__.__name__}.generate_packets(size, rate_lambda)\033[0m")
+        for packet in self.packets[:amount]:
+            queue += packet
+            self.packets.pop(0)
 
 
 class Packet:
@@ -119,12 +111,16 @@ class Packet:
     def __repr__(self) -> str:
         return (f"Packet(Source:{self.source}, Size:{self.size})")
 
+    def __add__(self, packet):
+        self.size += packet.size
+        return (self)
+
 
 def test_queue():
     """Scenario to test the class Queue"""
     fifo0 = Queue()
     for i in range(10):
-        fifo0.add(i)
+        fifo0 += i
     print(fifo0)
     while not fifo0.is_empty():
         fifo0.remove()
@@ -149,60 +145,97 @@ def test_client():
 
 
 class Buffer:
-    """"""
+    """LabelFrame with a progressbar associated with. Display stats such as:
+    \n - Maximum Size
+    \n - Packet loss
+    \n - Link Speed
+    \n - Number of packets left to process
+    \nOptionnal Arguments:
+    \n- row: int = 0 -> Same as reguler widgets.
+    \n- column: int = 0 -> Same as reguler widgets.
+    \n- rowspan: int = 1 -> Same as reguler widgets.
+    \n- columnspan: int = 1 -> Same as reguler widgets.
+    \n- padx: int = 0 -> Same as reguler widgets.
+    \n- pady: int = 0 -> Same as reguler widgets.
+    \n- sticky: str = "" -> Same as reguler widgets.
+    \n- display_size: int = 100 -> Length of the progress bar associated.
+    \n- size: int = 3000 -> Amount of points the buffer can accumulate.
+    \n- name: str = "Buffer id" -> The name of the LabelFrame created.
+    \n- link_speed: int = randint(1, 100) -> The speed at which the Buffer voids bits
+    \n- independant: bool = False -> Define a Buffer with an independant λ.
+    """
 
-    def __init__(self, master, grid_pos: tuple, size: int, index: int, clients: Client, display_size: int = 200):
+    def __init__(self, master, **kwargs):
         self.master = master
-        self.grid_pos = grid_pos
-        self.display_size = display_size
-        self.clients = clients
+        self.row = kwargs.get("row", 0)
+        self.column = kwargs.get("column", 0)
+        self.rowspan = kwargs.get("rowspan", 1)
+        self.columnspan = kwargs.get("columnspan", 1)
+        self.padx = kwargs.get("padx", 0)
+        self.pady = kwargs.get("pady", 0)
+        self.sticky = kwargs.get("sticky", "")
+        self.size = kwargs.get("size", 3000)
+        self.display_size = kwargs.get("display_size", 100)
+        self.name = kwargs.get("name", f"Buffer {id(self):02d}")
+        self.independant = kwargs.get("independant", False)
 
-        self.Frame = LabelFrame(self.master, text=f"Buffer {index}", background="#FFFF00")
-        self.Frame.grid(row=grid_pos[0], column=grid_pos[1], padx=grid_pos[2], pady=grid_pos[3])
-        self.buffer = Queue(size)
+        self.CL = Client()
+
+        self.Frame = LabelFrame(self.master, text=f"{self.name}", background="#17202A", fg="#FFFFFF")
+        self.Frame.grid(row=self.row, column=self.column, rowspan=self.rowspan, columnspan=self.columnspan, padx=self.padx, pady=self.pady, sticky=self.sticky)
+        self.buffer = Queue(self.size)
         self.progbarvalue = DoubleVar()
-        self.rate_lambda = DoubleVar()
-        self.link_speed = IntVar(value=1)  # bits/s
+        self.link_speed = IntVar(value=kwargs.get("link_speed", randint(1, int(self.size / 8))))  # bits/s
 
-        self.ProgressBar = ttk.Progressbar(self.Frame, orient=VERTICAL, length=self.display_size, variable=self.progbarvalue, style="red.Horizontal.TProgressbar")
-        self.ProgressBar.grid(row=0, column=0, padx=grid_pos[2], pady=grid_pos[3])
+        #  self.Frame.grid_rowconfigure(0, weight=1)
+        #  self.Frame.grid_rowconfigure(1, weight=1)
+
+        self.ProgressBar = ttk.Progressbar(self.Frame, orient=VERTICAL, length=self.display_size, variable=self.progbarvalue, style="blue.Horizontal.TProgressbar")
+        self.ProgressBar.grid(row=0, column=0, padx=5, pady=5, rowspan=int(self.display_size / 10), columnspan=1, sticky="nsw")
         self.ProgressBar.config(maximum=self.buffer.size)
 
-        self.occupation_label = Label(self.Frame, text="Occupied: N/A")
-        self.occupation_label.grid(row=0, column=2, padx=grid_pos[2], pady=grid_pos[3])
+        self.occupation_label = Label(self.Frame, text="Occupied: N/A", background="#CBAACB")
+        self.occupation_label.grid(row=0, column=1, sticky="nwes", pady=0)
 
-        self.loss_label = Label(self.Frame, text="Loss: N/A")
-        self.loss_label.grid(row=1, column=2, padx=grid_pos[2], pady=grid_pos[3])
+        self.loss_label = Label(self.Frame, text="Loss: N/A", background="#FFD54F", anchor="w")
+        self.loss_label.grid(row=1, column=1, sticky="nwes")
 
-        self.remaining_packets = Label(self.Frame, text="Packets left: N/A")
-        self.remaining_packets.grid(row=2, column=2, padx=grid_pos[2], pady=grid_pos[3])
+        self.remaining_packets = Label(self.Frame, text="Packets left: N/A", background="#FFCCBC")
+        self.remaining_packets.grid(row=2, column=1, sticky="nwes")
 
-        self.lambda_scale = Scale(self.Frame, from_=0, to=self.buffer.size // 8, orient=HORIZONTAL, variable=self.rate_lambda, resolution=0.1)
-        self.lambda_scale.config(length=self.display_size // 2)
-        self.lambda_scale.grid(row=3, column=3)
-
-        self.link_speed_scale = Scale(self.Frame, from_=1, to=1000, orient=HORIZONTAL, variable=self.link_speed)
+        self.link_speed_scale = Scale(self.Frame, from_=1, to=int(self.size / 3), orient=HORIZONTAL, variable=self.link_speed, label="Speed", background="#5DADE2")
         self.link_speed_scale.config(length=self.display_size // 2)
-        self.link_speed_scale.grid(row=2, column=3)
+        self.link_speed_scale.grid(row=3, column=1, sticky="ew")
+
+        if self.independant is True:
+            self.lambda_scale = Scale(self.Frame, from_=0, to=self.buffer.size // 8, orient=HORIZONTAL, variable=public_lambda, resolution=1, label="λ", background="#58D68D")
+            self.lambda_scale.config(length=self.display_size // 2)
+            self.lambda_scale.grid(row=4, column=1, columnspan=2, sticky="ew")
 
     def update(self):
 
         # Clients
-        self.clients.generate_packets(6, self.lambda_gen)
-        self.clients.send_packets(self.buffer, 2, False)
+        if self.independant is False:
+            if int(public_lambda.get()) > 0:
+                self.CL.generate_packets(6, int(public_lambda.get()))
+            for _ in range(2):
+                self.CL.send_packets(self.buffer, 1)
+                self.occupation_label.configure(text=f"Occupied:\n{self.buffer.space_occupied():04d}/{self.buffer.size}")
+                self.remaining_packets.configure(text=f"Packets left: {len(self.CL.packets)}")
 
         # Void of packets
-        self.buffer.transmit_packets(int(self.link_speed.get()), log=True)    # Void packets over time based on the link speed
+        self.buffer.transmit_packets(self.speed, log=True)    # Void packets over time based on the link speed
 
         # Updating widgets
         self.loss_label.configure(text=f"Loss: {self.buffer.ratio * 100:05.2f}%")
-        self.occupation_label.configure(text=f"Occupied: {self.buffer.space_occupied():04d}/{self.buffer.size}")
-        self.remaining_packets.configure(text=f"Packets left: {len(self.clients.packets)}")
         self.progbarvalue.set(self.buffer.space_occupied() - 0.001)
 
+    def receive_packets(self, packets):
+        self.buffer += packets
+
     @property
-    def lambda_gen(self):
-        return float(self.rate_lambda.get())
+    def speed(self):
+        return int(self.link_speed.get())
 
 
 def main_loop():
@@ -212,23 +245,38 @@ def main_loop():
         BUFFER.update()
 
     main_window.update()
-    main_window.after(func=main_loop, ms=1000)
+    main_window.after(func=main_loop, ms=1000)  # One loop per second
 
 
 if __name__ == "__main__":
-    # test_client()
+
+    """CLI = Client()
+    QUEU = Queue()
+    CLI.generate_packets(10, 5)
+    CLI.send_packets(QUEU, 100)"""
+    P1 = Packet(0, 15)
+    P1 += Packet(0, 15)
+    print(P1)
+    print(P1 + Packet(0, 70))
+
     # Create a Tkinter window
     main_window = Tk()
     main_window.title("Simulateur d'un lien réseau")
     main_window.configure(bg="#2C3E50")
     main_window.state("zoomed")
+
     style = ttk.Style()
     style.theme_use('clam')
-    style.configure("red.Horizontal.TProgressbar", foreground='red', background='red')
+    style.configure("blue.Horizontal.TProgressbar", foreground='blue', background='blue')
 
-    BUFFERS = [Buffer(main_window, (i // 6, i % 6, 5, 5), 3000, i, Client()) for i in range(12)]
+    public_lambda = DoubleVar()
+
+    BUFFERS = [Buffer(main_window, row=i % 5, column=i // 5, padx=5, pady=5, size=3000, name=f"Buffer {i:02d}") for i in range(6)]
+    BUFFERS += [Buffer(main_window, row=0, column=10, rowspan=100, padx=5, pady=5, sticky="nse", size=3000, display_size=200, name="Main Buffer", independant=True)]
 
     # Add any additional configuration or widgets here
+    main_window.columnconfigure(10, weight=1)
+    #main_window.rowconfigure(0, weight=1)
 
     # Run the Tkinter event loop
     main_loop()
