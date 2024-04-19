@@ -3,7 +3,7 @@
 
 # Téléchargement
   - Voici le lien de téléchargement:
-  [Archive ZIP](embed/Projet-IN407_2024_04_20.7z)
+  [Archive ZIP](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_20.7z)
 
 # Table des matières
   ## Partie 1
