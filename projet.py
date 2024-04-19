@@ -1,63 +1,82 @@
 from numpy import random as probability
-from tkinter import Tk, Label, Button, Scale, LabelFrame, ttk, IntVar, DoubleVar, VERTICAL, HORIZONTAL
-from random import randint, random
+from tkinter import Tk, Label, Scale, LabelFrame, ttk, IntVar, DoubleVar, VERTICAL, HORIZONTAL
+from random import randint
+from collections.abc import Iterable
 
 
 class Queue:
-    """Follow the principle of FIFO, First In First Out. Can be used as a Buffer."""
+    """Follow the principle of FIFO, First In First Out.
+    \nOptionnal Arguments:
+    \n - size: int = ∞ -> Determines the maximum amount the Queue can hold.
+    \n - content: any = [] -> The initial values to put inside the Queue.
+    """
 
-    def __init__(self, size: int = float("inf"), value=[]):
-        self.content = [value] if isinstance(value, int | float) else value
+    def __init__(self, size: int = float("inf"), content: any = []):
+        self.content = [content] if not isinstance(content, Iterable) else content
         self.__removed = None
-        self.__count = {"loss": 0, "success": 0}  # Success/Fail
+        self.__count = {"loss": 0, "success": 0}
         self.size = size
 
     def __repr__(self):
-        return (f"Queue({self.content})")
+        return (f"Queue({str(self.content)[1:-1]})")
 
-    def __add__(self, packet):
-        """Will add an element to the first position."""
-        if (self.space_remaining() > packet.size):
-            self.content.append(packet)
-            self.__count["success"] += 1
-        else:
-            self.__count["loss"] += 1
+    def __add__(self, value):
+        """Add an element to the first position."""
+        if isinstance(value, Packet):
+            if (self.space_remaining() > value.size):
+                self.content.append(value)
+                self.__count["success"] += 1
+            else:
+                self.__count["loss"] += 1
+        elif isinstance(value, Iterable):
+            self.content += value
         return (self)
 
     def remove(self):
-        """Will remove the last element of the Queue and store that value.\n\n Can also only return the last removed object."""
+        """Remove the last element of the Queue and store that value.\n\n Can also only return the last removed object."""
         if (self.length() > 0):    # Cannot remove anything from an empty list
             self.__removed = (self.content)[-1]
             self.content = (self.content)[:-1]
             return (self.__removed)
 
     def remove_all(self):
-        """Will remove all last element of the Queue."""
+        """Remove all last element of the Queue."""
         self.content = []
 
-    def transmit_packets(self, max_speed: int, **kwargs):
-        if self.length() > 0:
+    def gargabe_collection(self):
+        """Remove all packets that are empty."""
+        self.content = [element for element in self.content if isinstance(element, Packet) and (element.size > 0)]
+
+    def reset_ratio(self):
+        """Reset the count to 0 loss and 0 success."""
+        self.__count = {"loss": 0, "success": 0}
+
+    def transmit_packets(self, max_speed: int):
+        if (self.length() > 0):
             remaining = max_speed
             for packet in self.content:
-                if packet.size == 0:
+                if (packet.size == 0):
                     continue
                 else:
                     to_remove = min(packet.size, remaining)
                     packet.size -= to_remove
                     remaining -= to_remove
 
-            self.content = [packet for packet in self.content if packet.size > 0]   # Remove empty packets
+            self.gargabe_collection()
 
     def length(self):
         """Get the length of the Queue."""
         return (len(self.content))
 
     def space_remaining(self) -> int:
-        """Return the amount of space available"""
+        """Return the amount of space available."""
         return (self.size - sum([packet.size for packet in self.content]))
 
     def space_occupied(self, **kwargs) -> int:
-        """Return the amount of space available"""
+        """Return the amount of space available.
+        \nOptionnal Arguments:
+        \n - percentage: bool = False -> Will return the result in a percentage form [0;1].
+        """
         if kwargs.get("percentage") is True:
             return (sum([packet.size for packet in self.content]) / self.size)
         return sum([packet.size for packet in self.content])
@@ -73,7 +92,7 @@ class Queue:
 
     @property
     def ratio(self):
-        """Return the percentage of loss."""
+        """Return the percentage of loss [0;1]."""
         return (self.__count["loss"] / max(1, sum(self.__count.values())))
 
 
@@ -118,28 +137,34 @@ class Packet:
 
 def test_queue():
     """Scenario to test the class Queue"""
-    fifo0 = Queue()
-    for i in range(10):
-        fifo0 += i
-    print(fifo0)
+    fifo0 = Queue(size=8)       # Creates a Queue with a size limit of 8
+    for i in range(10):         # Attempt to fill the Queue with 10 elements
+        fifo0 += Packet(0, i)   # Using the __add__ method
+    print(fifo0, fifo0.length(), fifo0.space_occupied())                # Displaying using the __repr__ method
     while not fifo0.is_empty():
         fifo0.remove()
         print(fifo0.removed)
+    print(fifo0)
+    print(fifo0._Queue__count)
+    print(f"The Queue has a loss ratio of: {fifo0.ratio * 100:.3f}%")
+    print("Because the Queue can hold only 8 bits, we stop adding packets after the fourth packet (0+1+2+3 = 6 < 8, 0+1+2+3+4 = 10 > 8)")
 
 
-def test_client():
+def test_client(dummy_lambda):
     """Scenario to test the class Client and Packet"""
-    client0, queue0 = Client(), Queue(50)   # Init
-    print(id(client0))  # Proof that the packet source can be used to identify the client
-    client0.send_packets(queue0)    # To test without any packets
-    client0.generate_packets()      # Generating packets
-    client0.send_packets(queue0, 99)    # Sending all but one packet
-    print(queue0, queue0.length())  # Check that the queue is not empty
-    print()
+    client0, queue0 = Client(), Queue(500)       # Init
+    print(f"The id of the Client is:{id(client0)}")  # Proof that the packet source can be used to identify the client
+
+    client0.send_packets(queue0)                # To test without any packets
+    client0.generate_packets(100, dummy_lambda)      # Generating packets with λ
+    client0_packets = [packet.size for packet in client0.packets]
+    print(client0_packets, sum(client0_packets), len(client0_packets))  # Packets generated with λ and the total amount
+    client0.send_packets(queue0, 99)            # Sending all but one packet
+    print("queue0:", queue0.length(), queue0.space_occupied())  # The queue can't receive all packets
     print(f"There is {len(client0.packets)} packets remaining")     # How many packets left to send
-    client0.send_packets(queue0, len(client0.packets))  # Sending last packet
+    client0.send_packets(queue0, 1)              # Sending last packet
     print(f"There is {len(client0.packets)} packets remaining")
-    print(f"Packet loss: {queue0.ratio * 100:.3f}% based on {queue0.counter}")
+    print(f"Packet loss: {queue0.ratio * 100:.3f}%")    # Since the queue can only hold 500 bits, the remaining packets were lost
 
 # Question 4+
 
@@ -224,7 +249,7 @@ class Buffer:
                 self.remaining_packets.configure(text=f"Packets left: {len(self.CL.packets)}")
 
         # Void of packets
-        self.buffer.transmit_packets(self.speed, log=True)    # Void packets over time based on the link speed
+        self.buffer.transmit_packets(self.speed)    # Void packets over time based on the link speed
 
         # Updating widgets
         self.loss_label.configure(text=f"Loss: {self.buffer.ratio * 100:05.2f}%")
@@ -250,14 +275,10 @@ def main_loop():
 
 if __name__ == "__main__":
 
-    """CLI = Client()
-    QUEU = Queue()
-    CLI.generate_packets(10, 5)
-    CLI.send_packets(QUEU, 100)"""
-    P1 = Packet(0, 15)
-    P1 += Packet(0, 15)
-    print(P1)
-    print(P1 + Packet(0, 70))
+    # Test
+    test_queue()
+    print()
+    test_client(10)
 
     # Create a Tkinter window
     main_window = Tk()

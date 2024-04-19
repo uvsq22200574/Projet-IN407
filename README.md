@@ -1,14 +1,18 @@
 
 # Projet Python: Stratégies de gestion de flux à l'entrée 
 
+# Téléchargement
+  - Voici le lien de téléchargement:
+  [Archive ZIP](embed/Projet-IN407_2024_04_20.7z)
+
 # Table des matières
   ## Partie 1
   - On considère un réseau de communication à commutation de paquets. Les paquets arrivant au réseau de transmission peuvent provenir de plusieurs sources en entrée de ce réseau (voir Figure 1). Si le taux d'arrivée (en bits/s) de ces paquets au réseau dépasse le taux de transmission du lien, alors les paquets sont stockés dans un buffer (ou file d'attente) noté B, avant d'être transmis sur le lien. Comme ce buffer est de capacité finie, notée C, si à l'arrivée d'un paquet le buffer est plein, ce paquet sera rejeté, c'est-à-dire perdu. On suppose que les paquets arrivent selon un processus de Poisson de paramètre λ.
   ![Figure1](embed/Figure%201.png)
   - L'objectif principal de ce projet est de développer une application qui permet de comparer les stratégies de gestion de flux à l'entrée d'un réseau de communication. Ce projet comporte deux parties.
   - Question1 ![](https://img.shields.io/badge/Status-half_completed-yellow) Les classes évoluent constamment c'est difficile de dire qu'elle sont terminées
-  - Question2 ![](https://img.shields.io/badge/Status-half_completed-yellow) La surcharge à été effectuée mais nécessite des tests (Rapide)
-  - Question3 ![](https://img.shields.io/badge/Status-to_redo-purple) Puisque le code est "ancient", il faut le revoir et le tester (Rapide)
+  - Question2 ![](https://img.shields.io/badge/Status-completed-green)
+  - Question3 ![](https://img.shields.io/badge/Status-completed-green) Il faut re-tester quand la classe Client sera modifiée/fusionnée.
   - Question4 ![](https://img.shields.io/badge/Status-completed-green)
   - Question5 ![](https://img.shields.io/badge/Status-completed-green)
   ## Partie 2
@@ -18,16 +22,16 @@
     - La file d'attente choisie est celle contenant le plus grand nombre de paquets.
     - Un paquet est pris de chaque file d'attente, à tour de rôle.
     - La file d'attente est choisie de manière aléatoire
-  - Question1 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Je me demande encore quelle aproche prendre pour cette partie, modifer la classe Client et la rendre similaire à la classe Buffer, ou bien modifier la classe Buffer et lui intégrer un "type".
+  - Question1 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Je me demande encore quelle approche prendre pour cette partie, modifer la classe Client et la rendre similaire à la classe Buffer, ou bien fusionner les classe Buffer et Client et les distinguer au sein de la classe. Il faut pouvoir créer des Clients et les associer à un Buffer. Chaque client possède son propre Buffer, donc quand on le vide, il faut envoyer les paquets. La seconde approche me parait être la plus intuitive, mais le code deviendrait lourd.
   - Question2 ![](https://img.shields.io/badge/Status-todo-red)
   - Question3 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait juste créer un Label pour afficher le packet actuel dans la Source et modifier la source du packet pour que le Buffer principal affiche cette source
   - Question4 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait récuperer le self.ratio de chaque Source et en faire une analyse sur le temps
   ## À faire
   - Separate the Client from the Buffer class
   - Rename the Buffer class to something else, as they are just containers for a progressbar and labels
-  - Make Clients a custom widget that can be associated to the custom widget "Buffer"
-  - Add radio buttons to choose the strategy of emptying
+  - Fuse the Client and Buffer class, add a way to choose the behaviour, add the transfer feature for Clients
   - Add emptying strategy
+  - Add radio buttons to choose the strategy of emptying
 
 # Contacts
   - Chargé de TD: perla.hajjar@sqy.fr
