@@ -202,18 +202,15 @@ class Buffer:
         self.size = kwargs.get("size", 3000)
         self.display_size = kwargs.get("display_size", 100)
         self.name = kwargs.get("name", f"Buffer {id(self):02d}")
-        self.independant = kwargs.get("independant", False)
+        self.independant = kwargs.get("independant", False) # Can be replaced by a type [buffer;client]
 
-        self.CL = Client()
+        self.CL = Client()  # Must get rid of as it's supposed to interact with other objects, not with itself
 
         self.Frame = LabelFrame(self.master, text=f"{self.name}", background="#17202A", fg="#FFFFFF")
         self.Frame.grid(row=self.row, column=self.column, rowspan=self.rowspan, columnspan=self.columnspan, padx=self.padx, pady=self.pady, sticky=self.sticky)
         self.buffer = Queue(self.size)
         self.progbarvalue = DoubleVar()
         self.link_speed = IntVar(value=kwargs.get("link_speed", randint(1, int(self.size / 8))))  # bits/s
-
-        #  self.Frame.grid_rowconfigure(0, weight=1)
-        #  self.Frame.grid_rowconfigure(1, weight=1)
 
         self.ProgressBar = ttk.Progressbar(self.Frame, orient=VERTICAL, length=self.display_size, variable=self.progbarvalue, style="blue.Horizontal.TProgressbar")
         self.ProgressBar.grid(row=0, column=0, padx=5, pady=5, rowspan=int(self.display_size / 10), columnspan=1, sticky="nsw")
@@ -250,6 +247,7 @@ class Buffer:
 
         # Void of packets
         self.buffer.transmit_packets(self.speed)    # Void packets over time based on the link speed
+        # If it's a client, then it must be able to transmit those packets to a Buffer
 
         # Updating widgets
         self.loss_label.configure(text=f"Loss: {self.buffer.ratio * 100:05.2f}%")
@@ -264,18 +262,18 @@ class Buffer:
 
 
 def main_loop():
-    """What makes the window dynamic. Each loop is referred as a tick."""
+    """What makes the simulation dynamic. Each loop is referred as a tick."""
 
     for BUFFER in BUFFERS:
         BUFFER.update()
 
     main_window.update()
-    main_window.after(func=main_loop, ms=1000)  # One loop per second
+    main_window.after(func=main_loop, ms=1000)  # One tick per second
 
 
 if __name__ == "__main__":
 
-    # Test
+    # Test (Q2)
     test_queue()
     print()
     test_client(10)
@@ -292,12 +290,12 @@ if __name__ == "__main__":
 
     public_lambda = DoubleVar()
 
-    BUFFERS = [Buffer(main_window, row=i % 5, column=i // 5, padx=5, pady=5, size=3000, name=f"Buffer {i:02d}") for i in range(6)]
-    BUFFERS += [Buffer(main_window, row=0, column=10, rowspan=100, padx=5, pady=5, sticky="nse", size=3000, display_size=200, name="Main Buffer", independant=True)]
+    BUFFERS = [Buffer(main_window, row=i % 5, column=i // 5, padx=5, pady=5, size=30000, name=f"Buffer {i:02d}") for i in range(50)]  # Breaks at more than 50. No idea why
+    BUFFERS += [Buffer(main_window, row=0, column=100, rowspan=100, padx=5, pady=5, sticky="nse", size=100000, display_size=200, name="Main Buffer", independant=True)]
 
     # Add any additional configuration or widgets here
     main_window.columnconfigure(10, weight=1)
-    #main_window.rowconfigure(0, weight=1)
+    # main_window.rowconfigure(0, weight=1)
 
     # Run the Tkinter event loop
     main_loop()
