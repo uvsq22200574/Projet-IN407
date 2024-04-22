@@ -22,10 +22,10 @@
     - La file d'attente choisie est celle contenant le plus grand nombre de paquets.
     - Un paquet est pris de chaque file d'attente, à tour de rôle.
     - La file d'attente est choisie de manière aléatoire
-  - Question1 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Je me demande encore quelle approche prendre pour cette partie, modifer la classe Client et la rendre similaire à la classe Buffer, ou bien fusionner les classe Buffer et Client et les distinguer au sein de la classe. Il faut pouvoir créer des Clients et les associer à un Buffer. Chaque client possède son propre Buffer, donc quand on le vide, il faut envoyer les paquets. La seconde approche me parait être la plus intuitive, mais le code deviendrait lourd.
+  - Question1 ![](https://img.shields.io/badge/Status-todo-red)
   - Question2 ![](https://img.shields.io/badge/Status-todo-red)
-  - Question3 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait juste créer un Label pour afficher le packet actuel dans la Source et modifier la source du packet pour que le Buffer principal affiche cette source
-  - Question4 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait récuperer le self.ratio de chaque Source et en faire une analyse sur le temps
+  - Question3 ![](https://img.shields.io/badge/Status-todo-red)
+  - Question4 ![](https://img.shields.io/badge/Status-todo-red) Il faudrait récuperer le self.ratio de chaque Source et en faire une analyse sur le temps
   ## À faire
   - Ajouter des paramètres pour les fonctions de test (Rapide)
   - La classe Buffer devient la partie graphique, les classes Queue et Client représentent les classes demandées (Buffer et Source). Ces classes héritent de la partie graphique, les clients n'ont pas de pertes de packets donc pas de label associé, et le buffer principal n'a pas de packets restant à envoyer donc pas de label non plus. Il faut rajouter le packet "actuel", donc créer le label qui affiche le packet que les deux sont en train d'échanger(P2Q3). On peut utiliser le code suivant pour désactiver un élément graphique
