@@ -34,7 +34,8 @@
     if label.winfo_ismapped():  # Check if the label is currently visible
         label.grid_remove()  # Remove the label from the grid
     else:
-        label.grid()  # Add the label back to the grid```
+        label.grid()  # Add the label back to the grid
+  ```
   - Il faut les faire communiquer de sorte à ce que le buffer principal choisise le client, celui-ci envoie ses packets au buffer principal.
   - La vitesse du buffer principal détermine la vitesse de suppression des packets
   - Le choix se fait à partir des stratégies, donc le buffer principal choisit 1 client qui correspond au critère.
