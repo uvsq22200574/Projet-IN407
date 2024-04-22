@@ -27,12 +27,14 @@
   - Question3 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait juste créer un Label pour afficher le packet actuel dans la Source et modifier la source du packet pour que le Buffer principal affiche cette source
   - Question4 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait récuperer le self.ratio de chaque Source et en faire une analyse sur le temps
   ## À faire
-  - Separate the Client from the Buffer class
-  - Rename the Buffer class to something else, as they are just containers for a progressbar and labels
-  - Fuse the Client and Buffer class, add a way to choose the behaviour, add the transfer feature for Clients
-  - Add emptying strategy
-  - Add radio buttons to choose the strategy of emptying
   - Ajouter des paramètres pour les fonctions de test (Rapide)
+  - La classe Buffer devient la partie graphique, les classes Queue et Client représentent les classes demandées (Buffer et Source). Ces classes héritent de la partie graphique, les clients n'ont pas de pertes de packets donc pas de label associé, et le buffer principal n'a pas de packets restant à envoyer donc pas de label non plus. Il faut rajouter le packet "actuel", donc créer le label qui affiche le packet que les deux sont en train d'échanger(P2Q3).
+  - Il faut les faire communiquer de sorte à ce que le buffer principal choisise le client, celui-ci envoie ses packets au buffer principal.
+  - La vitesse du buffer principal détermine la vitesse de suppression des packets
+  - Le choix se fait à partir des stratégies, donc le buffer principal choisit 1 client qui correspond au critère.
+  - Il faut revoir les maximums des Scale, 1/8 peut devenir trop si la vitesse du lien n'est pas suffisante.
+  - Il faut rajouter au Client un attribut temps d'attente, qui est augmenté de 1 à chaque cycle, et qui est remis à zéro dès qu'ils sont choisit
+  - On peut faire ainsi une analyse en récupérant cet attribut pour chaque client.
 
 # Contacts
   - Chargé de TD: perla.hajjar@sqy.fr
