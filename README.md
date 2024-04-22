@@ -28,7 +28,11 @@
   - Question4 ![](https://img.shields.io/badge/Status-todo-red) Hugo: Il faudrait récuperer le self.ratio de chaque Source et en faire une analyse sur le temps
   ## À faire
   - Ajouter des paramètres pour les fonctions de test (Rapide)
-  - La classe Buffer devient la partie graphique, les classes Queue et Client représentent les classes demandées (Buffer et Source). Ces classes héritent de la partie graphique, les clients n'ont pas de pertes de packets donc pas de label associé, et le buffer principal n'a pas de packets restant à envoyer donc pas de label non plus. Il faut rajouter le packet "actuel", donc créer le label qui affiche le packet que les deux sont en train d'échanger(P2Q3).
+  - La classe Buffer devient la partie graphique, les classes Queue et Client représentent les classes demandées (Buffer et Source). Ces classes héritent de la partie graphique, les clients n'ont pas de pertes de packets donc pas de label associé, et le buffer principal n'a pas de packets restant à envoyer donc pas de label non plus. Il faut rajouter le packet "actuel", donc créer le label qui affiche le packet que les deux sont en train d'échanger(P2Q3). On peut utliser le code suivant '''def toggle_visibility():
+    if label.winfo_ismapped():  # Check if the label is currently visible
+        label.grid_remove()  # Remove the label from the grid
+    else:
+        label.grid()  # Add the label back to the grid'''
   - Il faut les faire communiquer de sorte à ce que le buffer principal choisise le client, celui-ci envoie ses packets au buffer principal.
   - La vitesse du buffer principal détermine la vitesse de suppression des packets
   - Le choix se fait à partir des stratégies, donc le buffer principal choisit 1 client qui correspond au critère.
