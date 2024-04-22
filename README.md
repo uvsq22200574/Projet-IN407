@@ -32,6 +32,7 @@
   - Fuse the Client and Buffer class, add a way to choose the behaviour, add the transfer feature for Clients
   - Add emptying strategy
   - Add radio buttons to choose the strategy of emptying
+  - Ajouter des paramètres pour les fonctions de test (Rapide)
 
 # Contacts
   - Chargé de TD: perla.hajjar@sqy.fr
