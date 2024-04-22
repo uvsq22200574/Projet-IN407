@@ -32,7 +32,7 @@
   - Il faut les faire communiquer de sorte à ce que le buffer principal choisise le client, celui-ci envoie ses packets au buffer principal.
   - La vitesse du buffer principal détermine la vitesse de suppression des packets
   - Le choix se fait à partir des stratégies, donc le buffer principal choisit 1 client qui correspond au critère.
-  - Il faut revoir les maximums des Scale, 1/8 peut devenir trop si la vitesse du lien n'est pas suffisante.
+  - Il faut revoir les maximums des Scale, 1/8 peut devenir trop si la vitesse du lien n'est pas suffisante. (Le lambda ne doit pas être trop haut)
   - Il faut rajouter au Client un attribut temps d'attente, qui est augmenté de 1 à chaque cycle, et qui est remis à zéro dès qu'ils sont choisit
   - On peut faire ainsi une analyse en récupérant cet attribut pour chaque client.
 
