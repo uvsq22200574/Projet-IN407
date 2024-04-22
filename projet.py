@@ -202,7 +202,7 @@ class Buffer:
         self.size = kwargs.get("size", 3000)
         self.display_size = kwargs.get("display_size", 100)
         self.name = kwargs.get("name", f"Buffer {id(self):02d}")
-        self.independant = kwargs.get("independant", False) # Can be replaced by a type [buffer;client]
+        self.independant = kwargs.get("independant", False)  # Can be replaced by a type [buffer;client]
 
         self.CL = Client()  # Must get rid of as it's supposed to interact with other objects, not with itself
 
@@ -240,10 +240,7 @@ class Buffer:
         if self.independant is False:
             if int(public_lambda.get()) > 0:
                 self.CL.generate_packets(6, int(public_lambda.get()))
-            for _ in range(2):
-                self.CL.send_packets(self.buffer, 1)
-                self.occupation_label.configure(text=f"Occupied:\n{self.buffer.space_occupied():04d}/{self.buffer.size}")
-                self.remaining_packets.configure(text=f"Packets left: {len(self.CL.packets)}")
+            self.CL.send_packets(self.buffer, 1)
 
         # Void of packets
         self.buffer.transmit_packets(self.speed)    # Void packets over time based on the link speed
@@ -251,7 +248,9 @@ class Buffer:
 
         # Updating widgets
         self.loss_label.configure(text=f"Loss: {self.buffer.ratio * 100:05.2f}%")
-        self.progbarvalue.set(self.buffer.space_occupied() - 0.001)
+        self.progbarvalue.set(self.buffer.space_occupied() - 1)
+        self.occupation_label.configure(text=f"Occupied:\n{self.buffer.space_occupied():04d}/{self.buffer.size}")
+        self.remaining_packets.configure(text=f"Packets left: {len(self.CL.packets)}")
 
     def receive_packets(self, packets):
         self.buffer += packets
@@ -290,7 +289,7 @@ if __name__ == "__main__":
 
     public_lambda = DoubleVar()
 
-    BUFFERS = [Buffer(main_window, row=i % 5, column=i // 5, padx=5, pady=5, size=30000, name=f"Buffer {i:02d}") for i in range(50)]  # Breaks at more than 50. No idea why
+    BUFFERS = [Buffer(main_window, row=i % 5, column=i // 5, padx=5, pady=5, size=100000, name=f"Buffer {i:02d}") for i in range(1)]  # Breaks at more than 50. No idea why
     BUFFERS += [Buffer(main_window, row=0, column=100, rowspan=100, padx=5, pady=5, sticky="nse", size=100000, display_size=200, name="Main Buffer", independant=True)]
 
     # Add any additional configuration or widgets here
