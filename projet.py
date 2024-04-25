@@ -1,6 +1,6 @@
 from numpy import random as probability
 from tkinter import Tk, Label, Scale, LabelFrame, ttk, IntVar, DoubleVar, VERTICAL, HORIZONTAL
-from random import randint
+from random import randint, choice
 from collections.abc import Iterable
 
 
@@ -121,7 +121,7 @@ class Buffer(Graph):
             content = []
         self.content = [content] if not isinstance(content, Iterable) else content
         self.__removed = None
-        self.__count = {"loss": 0, "success": 0}
+        self.count = {"loss": 0, "success": 0}
         self.size = size
         if self.ui is True:
             self.ProgressBar.config(maximum=self.size)
@@ -137,9 +137,9 @@ class Buffer(Graph):
         if isinstance(value, Packet):
             if (self.space_remaining() > value.size):
                 self.content.append(value)
-                self.__count["success"] += 1
+                self.count["success"] += 1
             else:
-                self.__count["loss"] += 1
+                self.count["loss"] += 1
         elif isinstance(value, Iterable):
             self.content += value
         return (self)
@@ -160,7 +160,7 @@ class Buffer(Graph):
 
     def reset_ratio(self):
         """Reset the count to 0 loss and 0 success."""
-        self.__count = {"loss": 0, "success": 0}
+        self.count = {"loss": 0, "success": 0}
 
     def void_packets(self, max_speed: int):
         if (self.length() > 0):
@@ -216,7 +216,7 @@ class Buffer(Graph):
     @property
     def ratio(self):
         """Return the percentage of loss [0;1]."""
-        return (self.__count["loss"] / max(1, sum(self.__count.values())))
+        return (self.count["loss"] / max(1, sum(self.count.values())))
 
 
 class Source(Buffer):
@@ -224,11 +224,13 @@ class Source(Buffer):
     \nOptionnal Arguments:
     \n - create_ui: bool = True -> Whether or not to create a GUI.
     """
+    sources = []
 
     def __init__(self, master=None, **kwargs):
         self.ui = kwargs.get("create_ui", True)
         super().__init__(master, **kwargs)
         self.id = id(self)
+        Source.sources += [self.id]
 
     def __repr__(self) -> str:
         return (f"Client(ID={self.id}, occupied:{self.space_occupied()}/{self.size}, amount={len(self.content)})")
@@ -240,6 +242,9 @@ class Source(Buffer):
         for value in probability.poisson(rate_lambda, size):
             if (self.space_occupied() + value) <= self.size:
                 self.content += [Packet(self.id, value, f"Packet {value:04d}")]
+                self.count["success"] += 1
+            else:
+                self.count["loss"] += 1
 
         self.update()
         if log is True:
@@ -288,7 +293,7 @@ def test_buffer():
         buffer0.remove()
         print(buffer0.removed)
     print(buffer0)
-    print(buffer0._Buffer__count)
+    print(buffer0.count)
     print(f"The Buffer has a loss ratio of: {buffer0.ratio * 100:.3f}%")
     print("Because the Buffer can hold only 8 bits, we stop adding packets after the fourth packet (0+1+2+3 = 6 < 8, 0+1+2+3+4 = 10 > 8)")
 
@@ -311,7 +316,8 @@ def test_client(dummy_lambda):
     print(f"There is {len(test_source0.content)} packets remaining")
     print("source0:", test_source0)
     print("buffer1:", test_buffer1)
-    print(f"Packet loss: {test_buffer1.ratio * 100:.3f}%")    # Since the buffer can only hold 500 bits, the remaining packets were lost
+    print(f"Source Packet loss: {test_source0.ratio * 100:.3f}%")
+    print(f"Buffer Packet loss: {test_buffer1.ratio * 100:.3f}%")
 
 # Question 4+
 
@@ -321,13 +327,15 @@ def main_loop():
     global tick
     tick += 1
     main_window.title(f"Simulateur d'un lien réseau tick #{tick}")
+    source_choice = choice(Source.sources)
 
     for BUFFER in BUFFERS:
         BUFFER.update()
     for SOURCE in SOURCES:
-        if (not SOURCE.content) and (tick % 2 == 0):
+        if (tick % 2 == 0):
             SOURCE.generate_packets(4, float(public_lambda.get()))
-        SOURCE.send_packets(BUFFERS[0])
+        if SOURCE.id == source_choice:
+            SOURCE.send_packets(BUFFERS[0])
         SOURCE.update()
 
     # Call transmit_packets once per tick
