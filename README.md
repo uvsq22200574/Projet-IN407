@@ -2,8 +2,9 @@
 # Projet Python: Stratégies de gestion de flux à l'entrée 
 
 # Téléchargement
-  - Voici le lien de téléchargement:
-  [Archive ZIP](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_20.7z)
+  - Voici les liens de téléchargement:
+    - [2024/04/20](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_20.7z)
+    - [2024/04/26](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_26.7z)
 
 # Table des matières
   ## Partie 1
@@ -23,15 +24,15 @@
     - Un paquet est pris de chaque file d'attente, à tour de rôle.
     - La file d'attente est choisie de manière aléatoire
   - Question1 ![](https://img.shields.io/badge/Status-completed-green)
-  - Question2 ![](https://img.shields.io/badge/Status-todo-red)
-  - Question3 ![](https://img.shields.io/badge/Status-todo-red)
-  - Question4 ![](https://img.shields.io/badge/Status-todo-red)
+  - Question2 ![](https://img.shields.io/badge/Status-completed-green)
+  - Question3 ![](https://img.shields.io/badge/Status-todo-purple) Les labels et les variables existent mais il faut les mettre à jour.
+  - Question4 ![](https://img.shields.io/badge/Status-half_completed-yellow)
   - Compte Rendu ![](https://img.shields.io/badge/Status-completed-green)
   ## À faire
-  - Il faut rajouter au Client un attribut temps d'attente, qui est augmenté de 1 à chaque cycle, et qui est remis à zéro dès qu'ils sont choisit
-  - On peut faire ainsi une analyse en récupérant cet attribut pour chaque client.
+  - Mettre à jour les labels de packets pour les Sources
+  - On peut faire une analyse du temps d'attente.
 
 # Contacts
   - Chargé de TD: perla.hajjar@sqy.fr
   - Chargé du Github: hugoassis.crh@protonmail.com
-  - Collaborateurs : N/A
+  - Collaborateurs : MENDES Rafael

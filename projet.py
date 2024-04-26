@@ -1,5 +1,5 @@
 from numpy import random as probability
-from tkinter import Tk, Label, Scale, LabelFrame, ttk, IntVar, DoubleVar, VERTICAL, HORIZONTAL
+from tkinter import Tk, Label, Scale, LabelFrame, Radiobutton, ttk, IntVar, DoubleVar, StringVar, VERTICAL, HORIZONTAL
 from random import randint, choice
 from collections.abc import Iterable
 
@@ -72,22 +72,25 @@ class Graph:
         self.remaining_packets = Label(self.Frame, text="Packets left: N/A", background="#FFCCBC")
         self.remaining_packets.grid(row=2, column=1, sticky="nwes")
 
-        # création label qui affichera le packet actuel transmis
+        # Label qui affichera la taille du packet actuel à transmettre
         self.packet_label = Label(self.Frame, text="Current packet: N/A", background="#FFCCBC")
         self.packet_label.grid(row=5, column=1, sticky="nwes")
 
-        # création label qui affichera le nom du packet actuel transmis
-        self.packet_name_label = Label(self.Frame, text="Packet name: N/A", background="#FFCCBC")
-        self.packet_name_label.grid(row=6, column=1, sticky="nwes")
-
-        self.link_speed_scale = Scale(self.Frame, from_=0, to=1, orient=HORIZONTAL, variable=self.link_speed, label="Speed", background="#5DADE2")
-        self.link_speed_scale.config(length=self.display_size // 2)
-        self.link_speed_scale.grid(row=3, column=1, sticky="ew")
+        # Label qui affichera le nom du packet actuel à transmettre
+        self.packet_size_label = Label(self.Frame, text="Current packet size: N/A", background="#FFCCBC")
+        self.packet_size_label.grid(row=6, column=1, sticky="nwes")
 
         if self.independant is True:
+            self.link_speed_scale = Scale(self.Frame, from_=0, to=1, orient=HORIZONTAL, variable=self.link_speed, label="Speed", background="#5DADE2")
+            self.link_speed_scale.config(length=self.display_size // 2)
+            self.link_speed_scale.grid(row=3, column=1, sticky="ew")
+
             self.lambda_scale = Scale(self.Frame, from_=0, to=1, orient=HORIZONTAL, variable=public_lambda, resolution=1, label="λ", background="#58D68D")
             self.lambda_scale.config(length=self.display_size // 2)
             self.lambda_scale.grid(row=4, column=1, columnspan=2, sticky="ew")
+        else:
+            self.waited_label = Label(self.Frame, text="Waited: N/A", background="#FFCCBC")
+            self.waited_label.grid(row=7, column=1, sticky="nwes")
 
     def receive_packets(self, packets):
         self.buffer += packets
@@ -96,21 +99,12 @@ class Graph:
     def speed(self):
         return int(self.link_speed.get())
 
-    def update(self):
-        # Mettre à jour le label qui affiche le nom du paquet actuel transmis
-        if self.packet_label.cget("text") != "Current packet:":
-            self.packet_name_label.configure(text=f"Packet name: {self.packet_label.cget('text').split('->')[1]}")
-
-        # Mettre à jour le Label si un packet est traité
-        if self.removed:
-            self.packet_label.configure(text=f"Current packet: {self.removed.source}->{self.removed.size}")
-
 
 class Buffer(Graph):
     """Follow the principle of FIFO, First In First Out. Use Graph docstring.
     \nOptionnal Arguments:
-    \n - size: int = ∞ -> Determines the maximum amount the Queue can hold.
-    \n - content: any = [] -> The initial values to put inside the Queue.
+    \n - size: int = ∞ -> Determines the maximum amount the Buffer can hold.
+    \n - content: any = [] -> The initial values to put inside the Buffer.
     \n - create_ui: bool = True -> Whether or not to create a GUI.
     """
     def __init__(self, master=None, size: int = float("inf"), content: any = None, **kwargs):
@@ -125,9 +119,15 @@ class Buffer(Graph):
         self.size = size
         if self.ui is True:
             self.ProgressBar.config(maximum=self.size)
-            self.link_speed_scale.config(to=self.size / 3)
             if self.independant is True:
+                self.link_speed_scale.config(to=self.size / 3)
                 self.lambda_scale.config(to=self.size // 50)
+                self.strategy_0 = Radiobutton(self.Frame, variable=strategy_var, indicatoron=0, bg="#EC7063", activebackground="#58D68D", selectcolor="#58D68D", value="Random", text="Random")
+                self.strategy_1 = Radiobutton(self.Frame, variable=strategy_var, indicatoron=0, bg="#EC7063", activebackground="#58D68D", selectcolor="#58D68D", value="Highest", text="Highest")
+                self.strategy_2 = Radiobutton(self.Frame, variable=strategy_var, indicatoron=0, bg="#EC7063", activebackground="#58D68D", selectcolor="#58D68D", value="Round", text="Round")
+                self.strategy_0.grid(row=7, column=1, sticky="ew")
+                self.strategy_1.grid(row=8, column=1, sticky="ew")
+                self.strategy_2.grid(row=9, column=1, sticky="ew")
 
     def __repr__(self):
         return (f"Buffer(occupied:{self.space_occupied()}/{self.size}, amount={len(self.content)})")
@@ -145,13 +145,13 @@ class Buffer(Graph):
         return (self)
 
     def remove(self):
-        """Remove the last element of the Queue and store that value.\n\n Can also only return the last removed object."""
+        """Remove the last element of the Buffer and store that value.\n\n Can also only return the last removed object."""
         if (self.length() > 0):    # Cannot remove anything from an empty list
             self.__removed = (self.content)[-1]
             self.content = (self.content)[:-1]
 
     def remove_all(self):
-        """Remove all last element of the Queue."""
+        """Remove all last element of the Buffer."""
         self.content = []
 
     def gargabe_collection(self):
@@ -176,7 +176,7 @@ class Buffer(Graph):
             self.gargabe_collection()
 
     def length(self):
-        """Get the length of the Queue."""
+        """Get the length of the Buffer."""
         return (len(self.content))
 
     def space_remaining(self) -> int:
@@ -193,7 +193,7 @@ class Buffer(Graph):
         return sum([packet.size for packet in self.content])
 
     def is_empty(self):
-        """Checks if the Queue is empty or not."""
+        """Checks if the Buffer is empty or not."""
         return (False if self.content else True)
 
     def update(self):
@@ -203,10 +203,6 @@ class Buffer(Graph):
             self.loss_label.configure(text=f"Loss: {self.ratio * 100:05.2f}%")
             self.progbarvalue.set(self.space_occupied() - 1)
             self.occupation_label.configure(text=f"Occupied:\n{self.space_occupied():04d}/{self.size}")
-
-        # update label current packet
-        if self.removed:
-            self.packet_label.configure(text=f"Current packet: {self.removed.source}->{self.removed.size}")
 
     @property
     def removed(self):
@@ -224,13 +220,12 @@ class Source(Buffer):
     \nOptionnal Arguments:
     \n - create_ui: bool = True -> Whether or not to create a GUI.
     """
-    sources = []
 
     def __init__(self, master=None, **kwargs):
         self.ui = kwargs.get("create_ui", True)
-        super().__init__(master, **kwargs)
         self.id = id(self)
-        Source.sources += [self.id]
+        self.waited = 0
+        super().__init__(master, **kwargs)
 
     def __repr__(self) -> str:
         return (f"Client(ID={self.id}, occupied:{self.space_occupied()}/{self.size}, amount={len(self.content)})")
@@ -241,8 +236,9 @@ class Source(Buffer):
         """
         for value in probability.poisson(rate_lambda, size):
             if (self.space_occupied() + value) <= self.size:
-                self.content += [Packet(self.id, value, f"Packet {value:04d}")]
-                self.count["success"] += 1
+                if value > 0:
+                    self.content += [Packet(self.id, value, f"Packet {value:04d}")]
+                    self.count["success"] += 1
             else:
                 self.count["loss"] += 1
 
@@ -259,7 +255,8 @@ class Source(Buffer):
                 buffer += packet  # Add the packet to the buffer
                 buffer.update()
                 if self.ui is True:
-                    buffer.packet_label.configure(text=f"Current packet: {packet.name}")
+                    buffer.packet_label.configure(text=f"Current packet: {packet.source}")
+                    buffer.packet_size_label.configure(text=f"Current packet size: {packet.size}")
             else:
                 # Transmettre le prochain paquet de la liste de paquets du client
                 if self.content:
@@ -267,7 +264,8 @@ class Source(Buffer):
                     buffer += next_packet  # Add the packet to the buffer
                     buffer.update()
                     if self.ui is True:
-                        buffer.packet_label.configure(text=f"Current packet: {next_packet.name}")
+                        buffer.packet_label.configure(text=f"Current packet: {next_packet.source}")
+                        buffer.packet_size_label.configure(text=f"Current packet size: {next_packet.size}")
 
     def update(self):
 
@@ -276,12 +274,8 @@ class Source(Buffer):
             self.loss_label.configure(text=f"Loss: {self.ratio * 100:05.2f}%")
             self.progbarvalue.set(self.space_occupied() - 1)
             self.occupation_label.configure(text=f"Occupied:\n{self.space_occupied():04d}/{self.size}")
-
-#    def send_packets(self, queue: Buffer, amount: int = 1):
-#       """The amount determines the number of cycles before creating new packets"""
-#        for packet in self.content[:amount]:
-#            queue += packet
-#            self.content.pop(0)
+            self.remaining_packets.configure(text=f"Packets left: {self.length()}")
+            self.waited_label.configure(text=f"Waited: {self.waited}s")
 
 
 def test_buffer():
@@ -328,9 +322,20 @@ def main_loop():
     global tick
     tick += 1
     main_window.title(f"Simulateur d'un lien réseau tick #{tick}")
-    candidats = [source.id for source in SOURCES if source.space_occupied() > 0]
-    source_choice = choice(candidats) if len(candidats) > 0 else 0  # Based on the strategy chosen
-    print(source_choice)
+    source_choice = None
+
+    match strategy_var.get():
+        case "Random":
+            candidats = [source.id for source in SOURCES if source.space_occupied() > 0]
+            source_choice = choice(candidats) if len(candidats) > 0 else 0
+        case "Highest":
+            temp = 0
+            for source in SOURCES:
+                if source.space_occupied() > temp:
+                    temp = source.space_occupied()
+                    source_choice = source.id
+        case "Round":
+            source_choice = SOURCES[tick % len(SOURCES)].id
 
     for BUFFER in BUFFERS:
         BUFFER.update()
@@ -339,7 +344,11 @@ def main_loop():
             SOURCE.generate_packets(4, float(public_lambda.get()))
         if SOURCE.id == source_choice:
             SOURCE.send_packets(BUFFERS[0])
+            SOURCE.waited = 0
             BUFFERS[0].update()
+        else:
+            if SOURCE.length() > 0:
+                SOURCE.waited += 1
         SOURCE.update()
 
     # Call transmit_packets once per tick
@@ -347,7 +356,7 @@ def main_loop():
         BUFFER.void_packets(BUFFER.speed)
 
     main_window.update()
-    main_window.after(func=main_loop, ms=100)  # One tick per second
+    main_window.after(func=main_loop, ms=1000)  # One tick per second
 
 
 if __name__ == "__main__":
@@ -368,10 +377,11 @@ if __name__ == "__main__":
     style.configure("blue.Horizontal.TProgressbar", foreground='blue', background='blue')
 
     public_lambda = DoubleVar()
-
-    SOURCES = [Source(main_window, row=i % 3, column=i // 3, padx=5, pady=5, size=10000, name=f"Client {i:02d}") for i in range(4)]
-    BUFFERS = [Buffer(main_window, row=0, column=100, rowspan=100, padx=5, pady=5, sticky="nse", size=100000, display_size=200, name="Main Buffer", independant=True)]
     tick = 0
+    strategy_var = StringVar(value="Random")
+
+    SOURCES = [Source(main_window, row=i % 3, column=i // 3, padx=5, pady=5, size=10000, name=f"Client {i:02d}") for i in range(9)]
+    BUFFERS = [Buffer(main_window, row=0, column=100, rowspan=100, padx=5, pady=5, sticky="nse", size=100000, display_size=200, name="Main Buffer", independant=True)]
 
     main_window.columnconfigure(10, weight=1)  # Make sure the main Buffer is at the right side
 
