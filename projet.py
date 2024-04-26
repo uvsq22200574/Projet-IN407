@@ -253,6 +253,7 @@ class Source(Buffer):
 
     def send_packets(self, buffer, amount: int = 1, packet: Packet = None):
         """The amount determines the number of cycles before creating new packets"""
+        self.gargabe_collection()   # Don't send packets that are empty
         for i in range(amount):
             if packet is not None:
                 buffer += packet  # Add the packet to the buffer
@@ -327,15 +328,18 @@ def main_loop():
     global tick
     tick += 1
     main_window.title(f"Simulateur d'un lien réseau tick #{tick}")
-    source_choice = choice(Source.sources)
+    candidats = [source.id for source in SOURCES if source.space_occupied() > 0]
+    source_choice = choice(candidats) if len(candidats) > 0 else 0  # Based on the strategy chosen
+    print(source_choice)
 
     for BUFFER in BUFFERS:
         BUFFER.update()
     for SOURCE in SOURCES:
-        if (tick % 2 == 0):
+        if (tick % 2 == 0):     # Every two ticks
             SOURCE.generate_packets(4, float(public_lambda.get()))
         if SOURCE.id == source_choice:
             SOURCE.send_packets(BUFFERS[0])
+            BUFFERS[0].update()
         SOURCE.update()
 
     # Call transmit_packets once per tick
@@ -343,7 +347,7 @@ def main_loop():
         BUFFER.void_packets(BUFFER.speed)
 
     main_window.update()
-    main_window.after(func=main_loop, ms=1000)  # One tick per second
+    main_window.after(func=main_loop, ms=100)  # One tick per second
 
 
 if __name__ == "__main__":
@@ -365,7 +369,7 @@ if __name__ == "__main__":
 
     public_lambda = DoubleVar()
 
-    SOURCES = [Source(main_window, row=i % 5, column=i // 5, padx=5, pady=5, size=10000, name=f"Client {i:02d}") for i in range(4)]
+    SOURCES = [Source(main_window, row=i % 3, column=i // 3, padx=5, pady=5, size=10000, name=f"Client {i:02d}") for i in range(4)]
     BUFFERS = [Buffer(main_window, row=0, column=100, rowspan=100, padx=5, pady=5, sticky="nse", size=100000, display_size=200, name="Main Buffer", independant=True)]
     tick = 0
 
