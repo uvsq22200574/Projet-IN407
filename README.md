@@ -3,8 +3,9 @@
 
 # Téléchargement
   - Voici les liens de téléchargement:
-    - [2024/04/20](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_20.7z)
-    - [2024/04/26](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_26.7z)
+    - [2024/04/20 7Z](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_20.7z)
+    - [2024/04/26 7Z](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_26.7z)
+    - [2024/04/26 ZIP](https://github.com/uvsq22200574/Projet-IN407/raw/main/embed/Projet-IN407_2024_04_26.zip)
 
 # Table des matières
   ## Partie 1
